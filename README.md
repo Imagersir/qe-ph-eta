@@ -1,11 +1,8 @@
 # Patch for Quantum ESPRESSO 7.3: QE-PH-Eta
 
 This repository provides a **patch** for **Quantum ESPRESSO (QE) version 7.3**
-that implements a new feature for the circularly polarized phonon magnetic effect (primarily targeting the phonon Zeeman energy in magnetic materials) based on the DFPT method.
+that implements a new feature for the circularly polarized phonon magnetic effect (primarily targeting the phonon Zeeman energy in magnetic materials) based on the DFPT method. This code is intended for **research and reproducibility purposes**. If you find our code helpful for your research, please cite our article [DOI: https://doi.org/10.1103/tpjd-dh1m].
 
-This code is intended for **research and reproducibility purposes**.
-The emphasis of this repository is on **installation and usage**, rather than
-software development details.
 
 ---
 
