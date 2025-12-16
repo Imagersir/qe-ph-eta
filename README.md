@@ -17,7 +17,8 @@ that implements a new feature for the circularly polarized phonon magnetic effec
 ## What this patch provides
 
 - Enables:
-  - [Feature / physical capability]
+  - Calculation of $\eta$ (Phonon Zeeman energy $E_Z=\mathbm{\eta}\cdot \mathbm{s}^{\text{ph}}$)
+  - Lande g-factor of circlular polarized phonon
 
 
 Implementation details are intentionally omitted.
