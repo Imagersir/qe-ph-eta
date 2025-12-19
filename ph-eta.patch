@@ -16870,7 +16870,7 @@ index d0becf9..1b61ec0 100644
    !! if TRUE the dynamical matrix is in xml form
    LOGICAL :: all_done
 diff --git a/qe-7.3/PHonon/PH/phq_readin.f90 b/qe-7.3-public/PHonon/PH/phq_readin.f90
-index 1bd6047..4436a65 100644
+index 1bd6047..ee8ae2b 100644
 --- a/qe-7.3/PHonon/PH/phq_readin.f90
 +++ b/qe-7.3-public/PHonon/PH/phq_readin.f90
 @@ -39,7 +39,7 @@ SUBROUTINE phq_readin()
@@ -16950,7 +16950,7 @@ index 1bd6047..4436a65 100644
    el_ph_nsigma = 10
 +  el_ph_delta_ef   = 0d0
 +  B_delta_ef   = 0.001d0
-+  energy_window= 1d0
++  energy_window= 2d0
    el_ph_ngauss = 1
    lraman       = .FALSE.
    elop         = .FALSE.
