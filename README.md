@@ -45,7 +45,7 @@ make all
   fildyn = 'Material.dyn'
   ldisp = .true.
   el_ph_sigma = 0.001
-  el_ph_nsigma = 10
+  el_ph_nsigma = 1
   qplot = .true.
   q_in_band_form = .true.
   electron_phonon = 'interpolated'
