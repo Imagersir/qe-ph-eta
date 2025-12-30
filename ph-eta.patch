@@ -14159,7 +14159,7 @@ index 4425d16..9b7ee4a 100644
    COMPLEX(DP), ALLOCATABLE, TARGET :: &
         el_ph_mat(:,:,:,:), &    !  nbnd, nbnd, nks, 3*nat
 diff --git a/qe-7.3/PHonon/PH/elphon.f90 b/qe-7.3-public/PHonon/PH/elphon.f90
-index 5d47cb8..1459d52 100644
+index 5d47cb8..1c59ddf 100644
 --- a/qe-7.3/PHonon/PH/elphon.f90
 +++ b/qe-7.3-public/PHonon/PH/elphon.f90
 @@ -24,9 +24,10 @@ SUBROUTINE elphon()
@@ -14320,7 +14320,7 @@ index 5d47cb8..1459d52 100644
    !
    nti  = nk1fit/nk1
    ntj  = nk2fit/nk2
-@@ -971,17 +984,35 @@ SUBROUTINE elphsum ( )
+@@ -971,17 +984,34 @@ SUBROUTINE elphsum ( )
    END IF
    !
    allocate (gf(3*nat,3*nat,el_ph_nsigma))
@@ -14342,7 +14342,6 @@ index 5d47cb8..1459d52 100644
 +  eta_o (:) = 0.0d0
 +  gph_o (:) = 0.0d0
 +  gphr (:,:) = 0.0d0
-+  !B_delta_ef=0.001d0
  #if defined(__MPI)
    do ibnd = me_image+1, nbnd, nproc_image
  #else
@@ -14356,7 +14355,7 @@ index 5d47cb8..1459d52 100644
          allocate (g2(nkBZ*nspin_lsda,3*nat,3*nat))
          allocate (g1(nksqtot,3*nat,3*nat))
          do ik = 1, nksqtot
-@@ -1015,8 +1046,8 @@ SUBROUTINE elphsum ( )
+@@ -1015,8 +1045,8 @@ SUBROUTINE elphsum ( )
          deallocate (g1)
          !
          allocate ( point(nkBZ), noint(nkfit) )
@@ -14367,7 +14366,7 @@ index 5d47cb8..1459d52 100644
                do ispin=1,nspin_lsda
                !
                point(1:nkBZ) = &
-@@ -1027,15 +1058,54 @@ SUBROUTINE elphsum ( )
+@@ -1027,15 +1057,54 @@ SUBROUTINE elphsum ( )
                do isig = 1,el_ph_nsigma
                   degauss1 = deg(isig)
                   effit1   = effit(isig)
@@ -14378,7 +14377,7 @@ index 5d47cb8..1459d52 100644
                   do ik=1,nkfit
                      etk   = etfit(ibnd,eqkfit(ik)+nksfit*(ispin-1)/2)
                      etq   = etfit(jbnd,eqqfit(ik)+nksfit*(ispin-1)/2)
-+                    if (abs(etk-effit1)>energy_window/rytoev) then! reduce orbitals with too low/high energy (-1 eV,1 eV)
++                    if (abs(etk-effit1)>energy_window/rytoev) then
 +                       cycle
 +                    endif
 +                    if (abs(etq-effit1)>energy_window/rytoeV) then
@@ -14425,7 +14424,7 @@ index 5d47cb8..1459d52 100644
                enddo ! isig
                enddo ! ispin
             enddo    ! ipert
-@@ -1049,55 +1119,69 @@ SUBROUTINE elphsum ( )
+@@ -1049,55 +1118,68 @@ SUBROUTINE elphsum ( )
  #if defined(__MPI)
    CALL MPI_ALLREDUCE(MPI_IN_PLACE,gf,3*nat*3*nat*el_ph_nsigma, &
                       MPI_DOUBLE_COMPLEX,MPI_SUM,intra_image_comm,ierr)
@@ -14458,10 +14457,10 @@ index 5d47cb8..1459d52 100644
 +           do ispin=1,nspin_lsda
 +               dtemp1=gf2(nu,3*mu-2,isig,ispin)
 +               dtemp2=gf2(nu,3*mu-1,isig,ispin)
-+               gxy=(dtemp1+dtemp2)/2.0d0!approx to gxgy, for the arbitrary coordinate system
++               gxy=(dtemp1+dtemp2)/2.0d0
 +               dtemp1=gf2d(nu,3*mu-2,isig,ispin)
 +               dtemp2=gf2d(nu,3*mu-1,isig,ispin)
-+               gxyd=(dtemp1+dtemp2)/2.0d0!approx to gxgy, for the arbitrary coordinate system
++               gxyd=(dtemp1+dtemp2)/2.0d0
 +               eta(nu,isig)=eta(nu,isig)-(2*ispin-3)*gxy
 +               gphr(nu,isig)=gphr(nu,isig)-(2*ispin-3)*gxyd!+(gxyd-gxy)
             enddo
@@ -14496,7 +14495,6 @@ index 5d47cb8..1459d52 100644
 -        gam(nu,isig) = gam(nu,isig)*ry_to_ghz
 +        gam(nu,isig) = gam(nu,isig)*ry_to_ghz/1000d0!THZ
 +        eta(nu,isig) = eta(nu,isig)*ry_to_ghz/1000d0!THZ
-+        !gphr(nu,isig) = gphr(nu,isig)*ry_to_ghz/1000d0!THZ
       enddo  !nu
    enddo  ! isig
    !
@@ -14519,12 +14517,11 @@ index 5d47cb8..1459d52 100644
       enddo
    enddo
    ! Isaev: save files in suitable format for processing by lambda.x
-@@ -1108,14 +1192,10 @@ SUBROUTINE elphsum ( )
+@@ -1108,14 +1190,9 @@ SUBROUTINE elphsum ( )
                                      iostat=ios)
  
       write(12, "(5x,3f14.6,2i6)") xq(1),xq(2),xq(3), el_ph_nsigma, 3*nat
 -     write(12, "(6e14.6)") (w2(i), i=1,3*nat)
-+     !write(12, "(6e14.6)") (w2(i), i=1,3*nat)
  
 -     do isig= 1, el_ph_nsigma
 -        WRITE (12, 9000) deg(isig), ngauss1
@@ -14537,7 +14534,7 @@ index 5d47cb8..1459d52 100644
       enddo
       close (unit=12,status='keep')
    ENDIF
-@@ -1123,7 +1203,12 @@ SUBROUTINE elphsum ( )
+@@ -1123,7 +1200,12 @@ SUBROUTINE elphsum ( )
    CALL mp_bcast(ios, ionode_id, intra_image_comm)
    IF (ios /= 0) CALL errore('elphsum','problem opening file'//TRIM(name),1)
    deallocate (gam)
@@ -14550,7 +14547,7 @@ index 5d47cb8..1459d52 100644
    write(stdout,*)
    !
    !    Prepare interface to q2r and matdyn
-@@ -1160,6 +1245,8 @@ SUBROUTINE elphsum ( )
+@@ -1160,6 +1242,8 @@ SUBROUTINE elphsum ( )
       if (ionode) CLOSE( UNIT = iuelph, STATUS = 'KEEP' )
    enddo
    deallocate (gf)
@@ -14559,7 +14556,7 @@ index 5d47cb8..1459d52 100644
    DEALLOCATE( deg )
    DEALLOCATE( effit )
    DEALLOCATE( dosfit )
-@@ -1170,10 +1257,12 @@ SUBROUTINE elphsum ( )
+@@ -1170,10 +1254,11 @@ SUBROUTINE elphsum ( )
  
    !
  9000 FORMAT(5x,'Gaussian Broadening: ',f7.3,' Ry, ngauss=',i4)
@@ -14568,13 +14565,12 @@ index 5d47cb8..1459d52 100644
            &       f10.6,' eV')
  9006 FORMAT(5x,'double delta at Ef =',f10.6)
 -9010 FORMAT(5x,'lambda(',i5,')=',f8.4,'   gamma=',f8.2,' GHz')
-+!9010 FORMAT(5x,'lambda(',i5,')=',f8.3,'  gamma=',f8.2,' GHz','  eta=', f8.3, ' THz')
 +9010 FORMAT(5x,i5,f8.4,f8.3,f8.3)
 +9011 FORMAT(5x,'gph/gs(',i5,')=',f8.4,'  eta=',f8.3,' THz',' gam=', f8.3, ' THz')
    !
    RETURN
  END SUBROUTINE elphsum
-@@ -1399,131 +1488,95 @@ SUBROUTINE elph_prt()
+@@ -1399,131 +1484,95 @@ SUBROUTINE elph_prt()
    !! 06/2023 - Merged to PH/ by S. Ponc\'e
    !!
    USE kinds,       ONLY : DP
@@ -14749,7 +14745,7 @@ index 5d47cb8..1459d52 100644
    IF (ionode) THEN
      !
      DO ibnd = 1, nbnd
-@@ -1545,6 +1598,8 @@ SUBROUTINE elph_prt()
+@@ -1545,6 +1594,8 @@ SUBROUTINE elph_prt()
            gamma = 0.d0
            DO vu = 1, 3 * nat
              DO mu = 1, 3 * nat
@@ -14758,7 +14754,7 @@ index 5d47cb8..1459d52 100644
                gamma = gamma + REAL(CONJG(dyn(mu, nu)) * el_ph_sum(mu, vu) &
                        * dyn(vu, nu))
              ENDDO
-@@ -1569,7 +1624,7 @@ SUBROUTINE elph_prt()
+@@ -1569,7 +1620,7 @@ SUBROUTINE elph_prt()
            !
            gamma = DSQRT(gamma)
            !
@@ -14767,7 +14763,7 @@ index 5d47cb8..1459d52 100644
            !
            epc(ibnd, jbnd, nu) = gamma
            !
-@@ -1580,6 +1635,7 @@ SUBROUTINE elph_prt()
+@@ -1580,6 +1631,7 @@ SUBROUTINE elph_prt()
      !
      ! HERE WE "SYMMETRIZE": actually we simply take the averages over
      ! degenerate states, it is only a convention because g is gauge-dependent!
@@ -14775,7 +14771,7 @@ index 5d47cb8..1459d52 100644
      !
      ! first the phonons
      !
-@@ -1613,6 +1669,7 @@ SUBROUTINE elph_prt()
+@@ -1613,6 +1665,7 @@ SUBROUTINE elph_prt()
      epc = epc_sym
      !
      ! then the k electrons
@@ -14783,7 +14779,7 @@ index 5d47cb8..1459d52 100644
      !
      DO nu  = 1, nmodes
        DO jbnd = 1, nbnd
-@@ -1644,6 +1701,7 @@ SUBROUTINE elph_prt()
+@@ -1644,6 +1697,7 @@ SUBROUTINE elph_prt()
      epc = epc_sym
      !
      ! and finally the k+q electrons
@@ -14791,7 +14787,7 @@ index 5d47cb8..1459d52 100644
      !
      DO nu = 1, nmodes
        DO ibnd = 1, nbnd
-@@ -1674,11 +1732,11 @@ SUBROUTINE elph_prt()
+@@ -1674,11 +1728,11 @@ SUBROUTINE elph_prt()
      ENDDO
      epc = epc_sym
      !
@@ -14808,7 +14804,7 @@ index 5d47cb8..1459d52 100644
      !
      DO ibnd = 1, nbnd
        DO jbnd = 1, nbnd
-@@ -1690,17 +1748,24 @@ SUBROUTINE elph_prt()
+@@ -1690,17 +1744,24 @@ SUBROUTINE elph_prt()
              w = DSQRT(-w2(nu))
            ENDIF
            !
@@ -14836,7 +14832,7 @@ index 5d47cb8..1459d52 100644
    !
    CALL stop_clock('elphsum2')
    !
-@@ -1778,7 +1843,7 @@ SUBROUTINE elphfil_epa(iq)
+@@ -1778,7 +1839,7 @@ SUBROUTINE elphfil_epa(iq)
    ENDIF
    IF (ionode) THEN
       iuelph = find_free_unit()
